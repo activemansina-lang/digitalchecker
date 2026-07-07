@@ -18,4 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Run DB migrations then start the bot (long-polling process).
-CMD ["sh", "-c", "alembic upgrade head && python -m app.main"]
+# `timeout 60` guarantees migrations never hang the container silently again —
+# if they do, the process exits non-zero and Railway's restart policy kicks in
+# with a clear "migration timed out" style log instead of eternal silence.
+CMD ["sh", "-c", "timeout 60 alembic upgrade head && python -m app.main"]
