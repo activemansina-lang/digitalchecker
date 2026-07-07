@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://digitalchecker:digitalchecker@postgres:5432/digitalchecker
+      - REDIS_URL=redis://redis:6379/0
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=digitalchecker
+      - POSTGRES_PASSWORD=digitalchecker
+      - POSTGRES_DB=digitalchecker
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U digitalchecker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
