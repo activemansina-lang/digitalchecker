@@ -28,7 +28,7 @@ class ThrottlingMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         key = f"throttle:{user.id}"
-        now = time.monotonic()
+        now = time.time()
         last_call = await redis.get(key)
         if last_call is not None and now - float(last_call) < self._min_interval:
             return None  # silently drop to avoid spamming the user with rate-limit messages

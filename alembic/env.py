@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool, text
+from sqlalchemy import engine_from_config, pool
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -36,19 +36,8 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-        # Fail fast instead of hanging forever if the server can't hand out a connection.
-        connect_args={"connect_timeout": 10},
-    )
+    connectable = engine_from_config(config.get_section(config.config_ini_section, {}), prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
-        # Critical: if another session holds a lock on alembic_version (e.g. a stale
-        # idle-in-transaction connection from a previous crashed deploy), don't wait
-        # forever for it — fail loudly after a few seconds instead.
-        connection.execute(text("SET lock_timeout = '5s'"))
-        connection.execute(text("SET statement_timeout = '30s'"))
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()

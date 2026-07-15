@@ -23,7 +23,6 @@ FA_ALIASES: dict[str, str] = {
     "تون": "the-open-network",
     "تون کوین": "the-open-network",
     "ترون": "tron",
-    "ترون": "tron",
     "دوج": "dogecoin",
     "دوج کوین": "dogecoin",
     "دوجکوین": "dogecoin",
